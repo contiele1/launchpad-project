@@ -1,14 +1,19 @@
 import requests
+import pprint
 
-URL = "https://content.guardianapis.com/search?q=debates"
+URL = "https://content.guardianapis.com/search"
 
 apikey = "27691256-07ee-4414-96b7-90b4c4c4ae27"
-test_apykey = "test"
 
-response = requests.get(URL+"&api-key="+test_apykey)
+params = {"q":"chess",
+          "api-key":"test"}
+
+response = requests.get(url=URL,params=params)
 
 print(response)
+#print(response.__attrs__)
+
 
 data = response.json()
-
-print(data)
+# pprint.pp(data)
+pprint.pp(data['response']['results'][0])
