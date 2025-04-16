@@ -1,19 +1,24 @@
+from dotenv import load_dotenv
+import os
 import requests
 import pprint
 
+load_dotenv()
+
 URL = "https://content.guardianapis.com/search"
 
-apikey = "27691256-07ee-4414-96b7-90b4c4c4ae27"
 
 params = {"q":"chess",
-          "api-key":"test"}
+          "order-by":"newest",
+          "api-key":os.environ["API-KEY"]}
 
 response = requests.get(url=URL,params=params)
 
 print(response)
-#print(response.__attrs__)
 
+results = response.json()
+selected_results = [{"webPublicationDate":result["webPublicationDate"],"webTitle":result["webTitle"],"webUrl":result["webUrl"]} for result in results['response']['results']]
 
-data = response.json()
-# pprint.pp(data)
-pprint.pp(data['response']['results'][0])
+pprint.pp(selected_results)
+
+# pprint.pp(data['response']['results'][0])
