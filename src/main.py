@@ -1,16 +1,13 @@
-from dotenv import load_dotenv
-import os
 import requests
 import pprint
 
-load_dotenv()
 
 def call_api(api_key: str, content:str = None, date:str = None):
 
     URL = "https://content.guardianapis.com/search"
 
-
     params = {"q":content,
+            "from-date": date,
             "order-by":"newest",
             "api-key":api_key}
 
@@ -25,6 +22,3 @@ def call_api(api_key: str, content:str = None, date:str = None):
                          for result in results['response']['results']]
 
     return selected_results
-
-
-# pprint.pp(data['response']['results'][0])
