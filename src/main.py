@@ -32,7 +32,7 @@ def call_api(api_key: str, content:str = None, date:str = None):
 
 def send_to_queue(messages: list):
             
-        sqs = boto3.client("sqs")
+        sqs = boto3.client("sqs", region_name="eu-west-2")
 
         queue_url = "https://sqs.eu-west-2.amazonaws.com/522585361178/FirstQueue"
 
