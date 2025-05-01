@@ -2,8 +2,9 @@ venv
 .env
 .vscode
 **/__pycache__
-terraform/.terraform*
-terraform/terraform.tfstate
-
-
+**/.terraform**
+terraform.tfstate
+dependencies
+packages
+.coverage
 
