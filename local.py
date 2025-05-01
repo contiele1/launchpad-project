@@ -7,5 +7,4 @@ load_dotenv()
 
 api_key = os.environ["API-KEY"]
 
-lambda_handler({"api_key":api_key},{})
-
+lambda_handler({"api_key": api_key}, {})

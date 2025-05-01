@@ -30,12 +30,11 @@ def send_to_queue(messages: list):
     sqs = boto3.client("sqs", region_name="eu-west-2")
 
     queue_url = sqs.get_queue_url(QueueName="guardian_content")["QueueUrl"]
-    
+
     for message in messages:
         message = json.dumps(message)
         response = sqs.send_message(QueueUrl=queue_url, MessageBody=message)
         print(response["MessageId"])
-
 
 
 def lambda_handler(event, context):

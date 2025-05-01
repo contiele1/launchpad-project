@@ -4,7 +4,7 @@ variable "sqs_name" {
 }
 
 variable "lambda_name" {
-  type = string
+  type    = string
   default = "call_and_send"
 }
 

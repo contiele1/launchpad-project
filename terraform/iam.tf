@@ -1,7 +1,7 @@
 ## ROLE POLICY FOR THE LAMBDA
 
 data "aws_iam_policy_document" "lambda_trust_policy" {
-    statement {
+  statement {
     effect = "Allow"
 
     principals {
@@ -22,14 +22,14 @@ resource "aws_iam_role" "lambda_role" {
 ## POLICY TO SEND TO QUEUE 
 
 data "aws_iam_policy_document" "lambda_sqs_policy" {
-    statement {
-    resources = [ "${aws_sqs_queue.terraform_queue.arn}" ]
-    actions = ["sqs:GetQueueUrl","sqs:SendMessage"]
+  statement {
+    resources = ["${aws_sqs_queue.terraform_queue.arn}"]
+    actions   = ["sqs:GetQueueUrl", "sqs:SendMessage"]
   }
 }
 
 resource "aws_iam_policy" "lambda_sqs" {
-  name = "lambda-sqs"
+  name   = "lambda-sqs"
   policy = data.aws_iam_policy_document.lambda_sqs_policy.json
 }
 
