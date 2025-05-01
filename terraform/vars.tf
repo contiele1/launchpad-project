@@ -3,8 +3,8 @@ variable "sqs_name" {
   default = "guardian_content"
 }
 
-variable "call_lambda_name" {
+variable "lambda_name" {
   type = string
-  default = "call_lambda"
-  
+  default = "call_and_send"
 }
+

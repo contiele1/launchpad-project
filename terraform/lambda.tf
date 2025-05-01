@@ -1,15 +1,22 @@
+data "archive_file" "call_lambda" {
+    type        = "zip"
+    source_file      = "${path.module}/../src/main.py"
+    output_path      = "${path.module}/../packages/function.zip"
+}
+
 resource "aws_lambda_function" "call_lambda" {
-    filename         = "${path.module}/../packages/call/function.zip"
-    function_name    = var.call_lambda_name
-    role             = aws_iam_role.call_lambda_role.arn
-    handler          = "call_api.call_lambda_handler"
-    source_code_hash = filebase64sha256("${path.module}/../src/call_api.py")
+    filename         = "${path.module}/../packages/function.zip"
+    function_name    = var.lambda_name
+    role             = aws_iam_role.lambda_role.arn
+    handler          = "main.lambda_handler"
+    source_code_hash = filebase64sha256("${path.module}/../src/main.py")
     runtime          = "python3.9"
     layers = [aws_lambda_layer_version.dependencies.arn]
 }
 
+
 data "archive_file" "lambda" {
     type        = "zip"
-    source_file      = "${path.module}/../src/call_api.py"
-    output_path      = "${path.module}/../packages/call/function.zip"
+    source_file      = "${path.module}/../src/main.py"
+    output_path      = "${path.module}/../packages/send/function.zip"
 }
