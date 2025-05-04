@@ -47,7 +47,7 @@ It will retrieve your api key from the .env file.
 ```json
 {
     "content": "your content",
-    "api_key": "your api key,
+    "api_key": "your api key",
     "date": "your date",
     "sqs_name": "your sqs name"
 }
