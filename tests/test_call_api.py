@@ -1,53 +1,86 @@
-from src.main import call_api
-import unittest
+from src.main import call_api, process_response_json, send_to_queue, lambda_handler
+import pytest
+from unittest.mock import patch, MagicMock
+import json
 from dotenv import load_dotenv
 import os
-import pprint
-
-# $env:PYTHONPATH = $PWD
 
 
 load_dotenv()
 api_key = os.environ["API-KEY"]
 
 
-class TestCallApi(unittest.TestCase):
+def get_test_data():
+    with open("tests/resources/query_result.json", "r") as f:
+        return json.load(f)
 
-    @unittest.skip("skip test")
-    def test_call_api_returns_10_results(self):
-        selected_results = call_api(api_key=api_key, content="Milan")
-        assert len(selected_results) == 10
-        selected_results = call_api(api_key=api_key, content="Manchester")
-        assert len(selected_results) == 10
-        pprint.pp(selected_results)
 
-    @unittest.skip("skip test")
-    def test_call_api_returns_results_according_to_content_request(self):
-        selected_results_1 = call_api(api_key=api_key, content="Milan")
-        selected_results_2 = call_api(api_key=api_key, content="Manchester")
-        selected_results_3 = call_api(api_key=api_key, content="Milan")
-        assert selected_results_1 != selected_results_2
-        assert selected_results_1 == selected_results_3
+response_json = get_test_data()
 
-    # @unittest.skip("skip test")
-    def test_call_api_returns_results_after_specified_date(self):
-        selected_results_no_date = call_api(api_key=api_key, content="Alberto")
-        pprint.pp(selected_results_no_date)
-        assert (
-            all(
-                result["webPublicationDate"] > "2025-04-15"
-                for result in selected_results_no_date
-            )
-            == False
-        )
-        selected_results_with_date = call_api(
-            api_key=api_key, content="Alberto", date="2025-04-15"
-        )
-        pprint.pp(selected_results_with_date)
-        assert (
-            all(
-                result["webPublicationDate"] > "2025-04-15"
-                for result in selected_results_with_date
-            )
-            == True
-        )
+
+class TestProcessResponseJSON:
+
+    def test_function_returns_list_of_dicts(self):
+        processed_response = process_response_json(response_json)
+        assert type(processed_response) == list
+        assert all(type(content) == dict for content in processed_response)
+
+    def test_function_returns_list_of_dicts_with_right_format(self):
+        processed_response = process_response_json(response_json)
+        assert all(len(content) == 3 for content in processed_response)
+        assert all(content.get("webPublicationDate") for content in processed_response)
+        assert all(content.get("webTitle") for content in processed_response)
+        assert all(content.get("webUrl") for content in processed_response)
+
+
+class TestCallApi:
+    @patch("requests.get")
+    def test_function_returns_None_if_error(self, mock_get):
+        mock_get.return_value.status_code = 201
+        mock_get.return_value.json.return_value = response_json
+        selected_results = call_api(api_key="test", content="foo")
+        assert selected_results == None
+
+    @patch("requests.get")
+    @patch("src.main.process_response_json")
+    def test_function_call_process_funct_and_returns_selected_results(
+        self, mock_process, mock_get
+    ):
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.json.return_value = response_json
+        mock_process.return_value = process_response_json(response_json)
+        selected_results = call_api(api_key="test", content="foo")
+
+        mock_process.assert_called_once_with(response_json)
+        assert selected_results == process_response_json(response_json)
+
+
+class TestSendToQueue:
+    @patch("boto3.client")
+    def test_function_calls_sqs_client_for_every_message(self, mock_boto_client):
+        mock_sqs = MagicMock()
+        mock_boto_client.return_value = mock_sqs
+        mock_sqs.send_message.return_value = {"MessageId": "id"}
+        message_Ids = send_to_queue(["message1", "message2"])
+        assert message_Ids == ["id", "id"]
+        message_Ids = send_to_queue(["message1", "message2", "message3"])
+        assert message_Ids == ["id", "id", "id"]
+
+
+class TestLambdaHandler:
+    def test_function_raises_value_error_if_key_missing(self):
+        event = {"content": "Harry Potter"}
+        with pytest.raises(ValueError):
+            lambda_handler(event, {})
+        event = {"api_key": "foo"}
+        with pytest.raises(ValueError):
+            lambda_handler(event, {})
+
+    @patch("src.main.call_api")
+    @patch("src.main.send_to_queue")
+    def test_function_calls_call_api_and_send_to_queue(self, mock_send, mock_call):
+        event = {"content": "Harry Potter", "api_key": "foo"}
+        mock_call.return_value = "Article on Harry Potter"
+        lambda_handler(event, {})
+        mock_call.assert_called_once_with("foo", "Harry Potter", None)
+        mock_send.assert_called_once_with("Article on Harry Potter")

@@ -5,9 +5,10 @@ import json
 
 GUARDIANAPIS_URL = "https://content.guardianapis.com/search"
 
-def call_api(api_key: str, content: str, date: str = None, debug: bool = True
-             ) -> Optional[list[dict[str, Any]]]:
-    
+
+def call_api(
+    api_key: str, content: str, date: str = None, debug: bool = True
+) -> Optional[list[dict[str, Any]]]:
     """Make a call to the Guardian search API.
 
     Args:
@@ -28,17 +29,18 @@ def call_api(api_key: str, content: str, date: str = None, debug: bool = True
     if response.status_code != 200:
         print(f"Failed to get response: {response.status_code=}")
         return None
-    
+
     if debug:
         print(response)
-    
+
     selected_results = process_response_json(response.json())
-    
+
     if not selected_results:
         print(f"No results found for keyword {content}")
         return None
-    
+
     return selected_results
+
 
 def process_response_json(response_json: dict[str, Any]) -> list[dict[str, Any]]:
     if "response" not in response_json:
@@ -61,11 +63,13 @@ def process_response_json(response_json: dict[str, Any]) -> list[dict[str, Any]]
 def send_to_queue(messages: list):
     sqs = boto3.client("sqs", region_name="eu-west-2")
     queue_url = sqs.get_queue_url(QueueName="guardian_content")["QueueUrl"]
-
+    message_Ids = []
     for message in messages:
         message = json.dumps(message)
         response = sqs.send_message(QueueUrl=queue_url, MessageBody=message)
         print(response["MessageId"])
+        message_Ids.append(response["MessageId"])
+    return message_Ids
 
 
 def lambda_handler(event, context):
@@ -74,6 +78,7 @@ def lambda_handler(event, context):
             return value
         else:
             raise ValueError(f"A required key is missing from event: {key}")
+
     api_key = required_contents("api_key")
     content = required_contents("content")
     date = event.get("date")
