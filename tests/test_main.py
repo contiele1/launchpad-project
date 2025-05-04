@@ -61,9 +61,11 @@ class TestSendToQueue:
         mock_sqs = MagicMock()
         mock_boto_client.return_value = mock_sqs
         mock_sqs.send_message.return_value = {"MessageId": "id"}
-        message_Ids = send_to_queue(["message1", "message2"])
+        message_Ids = send_to_queue(["message1", "message2"], "guardian_content")
         assert message_Ids == ["id", "id"]
-        message_Ids = send_to_queue(["message1", "message2", "message3"])
+        message_Ids = send_to_queue(
+            ["message1", "message2", "message3"], "guardian_content"
+        )
         assert message_Ids == ["id", "id", "id"]
 
 
@@ -79,8 +81,12 @@ class TestLambdaHandler:
     @patch("src.main.call_api")
     @patch("src.main.send_to_queue")
     def test_function_calls_call_api_and_send_to_queue(self, mock_send, mock_call):
-        event = {"content": "Harry Potter", "api_key": "foo"}
+        event = {
+            "content": "Harry Potter",
+            "api_key": "foo",
+            "sqs_name": "guardian_content",
+        }
         mock_call.return_value = "Article on Harry Potter"
         lambda_handler(event, {})
         mock_call.assert_called_once_with("foo", "Harry Potter", None)
-        mock_send.assert_called_once_with("Article on Harry Potter")
+        mock_send.assert_called_once_with("Article on Harry Potter", "guardian_content")

@@ -27,12 +27,16 @@ if __name__ == "__main__":
         else:
             print("Wrong date format.")
             time.sleep(1)
-           
+    while True:
+        sqs_name = input("Please insert the name of an SQS to send the contents to: ")
+        if sqs_name:
+            break       
     load_dotenv()
     api_key = os.environ["API-KEY"]
     event = {
         "content": content,
         "api_key": api_key,
-        "date": date
+        "date": date,
+        "sqs_name": sqs_name
     }
     lambda_handler(event, {})

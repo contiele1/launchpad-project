@@ -1,4 +1,5 @@
 from typing import Any, Optional
+from botocore.exceptions import ClientError
 import requests
 import boto3
 import json
@@ -24,14 +25,13 @@ def call_api(
 
     params = {"q": content, "from-date": date, "order-by": "newest", "api-key": api_key}
     response = requests.get(url=GUARDIANAPIS_URL, params=params)
-    print(response.url)
 
     if response.status_code != 200:
         print(f"Failed to get response: {response.status_code=}")
         return None
 
     if debug:
-        print(response)
+        print(f"Response from the Guardian API: ${response}")
 
     selected_results = process_response_json(response.json())
 
@@ -60,16 +60,21 @@ def process_response_json(response_json: dict[str, Any]) -> list[dict[str, Any]]
     ]
 
 
-def send_to_queue(messages: list):
+def send_to_queue(messages: list, sqs_name: str):
     sqs = boto3.client("sqs", region_name="eu-west-2")
-    queue_url = sqs.get_queue_url(QueueName="guardian_content")["QueueUrl"]
-    message_Ids = []
-    for message in messages:
-        message = json.dumps(message)
-        response = sqs.send_message(QueueUrl=queue_url, MessageBody=message)
-        print(response["MessageId"])
-        message_Ids.append(response["MessageId"])
-    return message_Ids
+    try:
+        queue_url = sqs.get_queue_url(QueueName=sqs_name)["QueueUrl"]
+        message_Ids = []
+        for message in messages:
+            message = json.dumps(message)
+            response = sqs.send_message(QueueUrl=queue_url, MessageBody=message)
+            print(response["MessageId"])
+            message_Ids.append(response["MessageId"])
+        return message_Ids
+    except ClientError as e:
+        print(f"AWS ClientError: {e.response['Error']['Message']}")
+    except Exception as e:
+        print(f"Unexpected error: {e}")
 
 
 def lambda_handler(event, context):
@@ -81,9 +86,10 @@ def lambda_handler(event, context):
 
     api_key = required_contents("api_key")
     content = required_contents("content")
+    sqs_name = required_contents("sqs_name")
     date = event.get("date")
 
     if messages := call_api(api_key, content, date):
-        send_to_queue(messages)
+        send_to_queue(messages, sqs_name)
     else:
         print("No messages to send to queue")
