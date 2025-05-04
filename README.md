@@ -11,6 +11,7 @@ For example, given the inputs:
 - "machine learning" 
 - "date_from=2023-01-01"
 - "guardian_content"
+
 it will retrieve all content returned by the API (called with the key "test") and send up to the ten most recent items in JSON format to the SQS named "guardian_content". The messages will have the following format:
 
 ```json
@@ -43,9 +44,11 @@ python local.py
 ```
 It will retrieve your api key from the .env file.
 - Once deployed, the lambda can be triggered via the AWS CLI or the AWS console with an event with this format:
-    {
-        "content": "your content",
-        "api_key": "your api key,
-        "date": "your date",
-        "sqs_name": "your sqs name"
-    }
+```json
+{
+    "content": "your content",
+    "api_key": "your api key,
+    "date": "your date",
+    "sqs_name": "your sqs name"
+}
+```
