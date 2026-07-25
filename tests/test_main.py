@@ -2,12 +2,6 @@ from src.main import call_api, process_response_json, send_to_queue, lambda_hand
 import pytest
 from unittest.mock import patch, MagicMock
 import json
-from dotenv import load_dotenv
-import os
-
-
-load_dotenv()
-api_key = os.environ["API-KEY"]
 
 
 def get_test_data():
