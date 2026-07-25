@@ -31,7 +31,7 @@ The terraform folder contains the modules to provision the infrastucture on AWS,
 
 ## Setup
 1. Run `make requirements` to install the modules listed in requirements.txt and create the dependencies for the lambda layer. Alternatively, running `make all` will also run the security checks and the unit tests.
-2. Running Terraform on the modules in the terraform folder will deploy the Lambda and and an SQS called 'guardian_content' in your AWS account (the region is set to eu-west-2).
+2. Running Terraform on the modules in the terraform folder will deploy the Lambda and an SQS called 'guardian_content' in your AWS account (the region is set to eu-west-2).
 3. To use the app locally, save your Guardian API key in an `.env` file as: 
 ```.env
 API-KEY=<your-guardian-key>
