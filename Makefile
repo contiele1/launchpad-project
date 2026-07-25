@@ -21,8 +21,7 @@ create-environment:
 	)
 	@echo ">>> Setting up VirtualEnv."
 	( \
-	    $(PIP) install -q virtualenv virtualenvwrapper; \
-	    virtualenv venv --python=$(PYTHON_INTERPRETER); \
+	    python -m venv venv \
 	)
 
 # Define utility variable to help calling Python from the virtual environment
