@@ -1,8 +1,10 @@
 # Streaming Data Project
 
+## Compatibility
+Tested on Linus and WSL.
+
 ## Description
-An application to retrieve articles from the [Guardian API](https://open-platform.theguardian.com/) and publish it to
-an instance of AWS SQS queue so that it can be consumed and analysed by other applications.
+An application to retrieve articles from the [Guardian API](https://open-platform.theguardian.com/) and publish it to an instance of AWS SQS queue so that it can be consumed and analysed by other applications.
 
 It accepts a key for the Guardian API, a search term (e.g. "machine learning"), an optional "date_from" field, and the name of an SQS queue. It will use the search terms to search for articles in the Guardian API and will then post details of up to ten hits to the SQS.
 
