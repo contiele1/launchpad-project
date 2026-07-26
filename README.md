@@ -1,7 +1,7 @@
 # Streaming Data Project
 
 ## Compatibility
-Tested on Linus and WSL.
+Tested on Linux and WSL.
 
 ## Description
 An application to retrieve articles from the [Guardian API](https://open-platform.theguardian.com/) and publish it to an instance of AWS SQS queue so that it can be consumed and analysed by other applications.
